@@ -1,0 +1,29 @@
+# CubeIDE build output
+Debug/
+Release/
+*.elf
+*.bin
+*.o
+*.d
+*.su
+*.map
+*.lst
+
+# CubeIDE workspace settings
+.metadata/
+.settings/
+*.launch
+*.cproject
+*.project
+
+# Generated files
+*.csv
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
