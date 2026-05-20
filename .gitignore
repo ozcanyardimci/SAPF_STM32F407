@@ -27,3 +27,11 @@ __pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# CubeIDE build output
+firmware/Debug/
+firmware/Release/
+firmware/*.launch
+firmware/.settings/
+firmware/.cproject
+firmware/.project
