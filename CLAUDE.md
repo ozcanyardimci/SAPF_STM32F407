@@ -195,7 +195,8 @@ PID:
 
 Initialization:
   P_avg      = 0.0f
-  V_S_sq_avg = 1225.0f   (70/√2)² prevents startup transient
+  V_S_sq_avg = 2449.7f   (70/√2)² = (70/1.41421)² = 49.497² = 2449.7
+                         prevents startup transient
   PID state  = 0.0f
 
 ═══════════════════════════════════════════════════════
@@ -352,9 +353,11 @@ SECTION 14 — PROJECT STATUS
 ═══════════════════════════════════════════════════════
 
 [ ] CubeMX configuration (TIM1 CH1+CH2, ADC, DMA, GPIO)
-[ ] apf_refgen.c and apf_refgen.h
-[ ] apf_hystctrl.c and apf_hystctrl.h
-[ ] main.c ISR callback and startup sequence
+[x] apf_refgen.c and apf_refgen.h — written, verified
+[x] apf_hystctrl.c and apf_hystctrl.h — written, verified, builds cleanly
+[x] main.c ISR callback and startup sequence complete
+[x] Multi-agent review passed (Codex 14/14,
+         Gemini 7 PASS 3 WARN — all warnings addressed)
 [ ] Software-in-loop test with ESP32
 [ ] Hardware component calculations
 [ ] Real hardware connection

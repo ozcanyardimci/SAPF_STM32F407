@@ -89,6 +89,17 @@ Midpoint sampling explanation:
   Switching noise is minimal at midpoint
   This is standard professional practice for power electronics
 
+STARTUP SEQUENCE (implemented in main.c USER CODE BEGIN 2):
+Full sequence documented in CLAUDE.md Section 10.
+Summary:
+  1. APF_RefGen_Init()                reset algorithm state
+  2. APF_HystCtrl_Init()              reset gate and CCR1
+  3. HAL_ADC_Start_DMA()              arm DMA before timer
+  4. HAL_TIM_PWM_Start() CH1          activate gate outputs
+  5. HAL_TIMEx_PWMN_Start() CH1       activate complementary
+  6. HAL_TIM_PWM_Start() CH2          activate ADC trigger
+  7. __HAL_TIM_ENABLE_IT()            enable ISR last
+
 ═══════════════════════════════════════════════════════
 SECTION 6 — COMPLETE ALGORITHM
 ═══════════════════════════════════════════════════════
@@ -183,9 +194,11 @@ SECTION 10 — PROJECT STATUS
 ═══════════════════════════════════════════════════════
 
 [ ] CubeMX configuration
-[ ] apf_refgen.c implemented
-[ ] apf_hystctrl.c implemented
-[ ] main.c ISR and startup
+[x] apf_refgen.c and apf_refgen.h — written, verified
+[x] apf_hystctrl.c and apf_hystctrl.h — written, verified, builds cleanly
+[x] main.c ISR and startup — complete
+[x] Multi-agent review complete — ready for
+         software-in-loop test
 [ ] Software-in-loop test
 [ ] Hardware calculations
 [ ] Real hardware integration
