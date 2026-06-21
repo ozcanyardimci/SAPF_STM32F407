@@ -10,7 +10,7 @@
  *
  * Hardware driven by this module:
  *   TIM1 CH1  (PA8)  → IR2103 IN pin → Q1+Q4 (high-side / positive leg)
- *   TIM1 CH1N (PB13) → IR2103 SD pin → Q2+Q3 (low-side / negative leg)
+ *   TIM1 CH1N (PE8) → IR2103 SD pin → Q2+Q3 (low-side / negative leg)
  *   Deadtime: 84 TIM1 counts = 500ns (hardware, prevents shoot-through)
  *
  * Called from:  TIM1 update ISR (stm32f4xx_it.c) at 20kHz (Ts = 50µs)

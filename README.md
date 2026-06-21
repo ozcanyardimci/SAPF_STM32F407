@@ -24,7 +24,7 @@ being implemented on the STM32F407.
 |---|---|---|
 | MCU | STM32F407VGT6 Discovery | Confirmed |
 | Grid | 48V RMS transformer secondary | Confirmed |
-| DC link setpoint | 90V | Confirmed |
+| DC link setpoint | 80V | Confirmed |
 | APF inductor | 4.21mH air-core | Confirmed |
 | Current sensors | 2× ACS712-05B (5A) | Confirmed |
 | Gate drivers | 2× IR2103 | Confirmed |
@@ -47,14 +47,14 @@ being implemented on the STM32F407.
 | V_S | PA3 | Bipolar | ±70V |
 | I_L1 | PC1 | Bipolar | ±5A |
 | gate_APF | PA8 | TIM1_CH1 | — |
-| gate_bar | PB13 | TIM1_CH1N | — |
+| gate_bar | PE8 | TIM1_CH1N | — |
 | ADC trigger | — | TIM1_CH2 fixed | CCR2=4199 |
 
 ### Control Algorithm
 - Outer loop: APF_RefGen — reference current generator
   - Instantaneous power theory
   - 5Hz IIR low-pass filter for average active power
-  - PID controller for DC link voltage regulation (90V)
+  - PID controller for DC link voltage regulation (80V)
 - Inner loop: APF_HystCtrl — hysteresis current controller
   - Hysteresis band: 0.5A
   - Switching frequency: ~20kHz
@@ -96,7 +96,7 @@ Simulink ortamında doğrulanmıştır.
 |---|---|---|
 | MCU | STM32F407VGT6 Discovery | Onaylandı |
 | Şebeke | 48V RMS trafo sekonderi | Onaylandı |
-| DC bara set noktası | 90V | Onaylandı |
+| DC bara set noktası | 80V | Onaylandı |
 | APF endüktansı | 4.21mH hava nüveli | Onaylandı |
 | Akım sensörleri | 2× ACS712-05B (5A) | Onaylandı |
 | Gate sürücüleri | 2× IR2103 | Onaylandı |
@@ -119,14 +119,14 @@ Simulink ortamında doğrulanmıştır.
 | V_S | PA3 | Bipolar | ±70V |
 | I_L1 | PC1 | Bipolar | ±5A |
 | gate_APF | PA8 | TIM1_CH1 | — |
-| gate_bar | PB13 | TIM1_CH1N | — |
+| gate_bar | PE8 | TIM1_CH1N | — |
 | ADC tetik | — | TIM1_CH2 sabit | CCR2=4199 |
 
 ### Kontrol Algoritması
 - Dış döngü: APF_RefGen — referans akım üreteci
   - Anlık güç teorisi
   - Ortalama aktif güç için 5Hz IIR alçak geçiren filtre
-  - DC bara gerilim regülasyonu için PID kontrolör (90V)
+  - DC bara gerilim regülasyonu için PID kontrolör (80V)
 - İç döngü: APF_HystCtrl — histerezis akım kontrolörü
   - Histerezis bandı: 0.5A
   - Anahtarlama frekansı: ~20kHz

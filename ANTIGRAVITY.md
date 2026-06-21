@@ -37,7 +37,7 @@ SECTION 3 — CONFIRMED HARDWARE
 
 Grid:             48V RMS (transformer secondary, 50Hz)
 Grid peak:        67.9V (48 × √2)
-DC link:          90V setpoint
+DC link:          80V setpoint
 
 APF inductor:     4.21mH air-core (measured with LCR meter)
 Simulink used 5mH — acceptable difference
@@ -62,7 +62,7 @@ SECTION 4 — PENDING HARDWARE
 These are not yet confirmed. Never assume values.
 Flag any code depending on these as needing confirmation.
 
-DC link capacitor:    TBD (must be rated above 90V)
+DC link capacitor:    TBD (must be rated above 80V)
 V\_S voltage divider:  TBD
 V\_dc voltage divider: TBD
 ACS712 output divider:TBD (5V → 3.3V scaling required)
@@ -112,7 +112,7 @@ OUTER LOOP — APF\_RefGen:
 Constants:
 TS      = 0.00005f     (20kHz period)
 ALPHA   = 0.001570f    (IIR coefficient, fc=5Hz)
-VDC\_REF = 90.0f        (DC link setpoint)
+VDC\_REF = 80.0f        (DC link setpoint)
 
 Step 1: p = V\_S × I\_L1
 Step 2: P\_avg = P\_avg + ALPHA × (p - P\_avg)
@@ -120,7 +120,7 @@ Step 3: V\_S\_sq\_avg = V\_S\_sq\_avg + ALPHA × (V\_S² - V\_S\_sq\_avg)
 V\_S\_rms = sqrt(V\_S\_sq\_avg)
 guard: V\_S\_rms minimum 1.0V
 Step 4: I\_active = P\_avg × sqrt(2) / V\_S\_rms
-Step 5: delta\_I = PID(90 - V\_dc)
+Step 5: delta\_I = PID(80 - V\_dc)
 Kp=0.02, Ki=0.5, Kd=0.0
 Integral clamp ±0.5A, output clamp ±1.0A
 Step 6: u\_t = V\_S / (sqrt(2) × V\_S\_rms)
@@ -189,8 +189,22 @@ These are already fixed. Do not flag as new bugs.
 3. HAL\_TIM\_Base\_Start\_IT fails → fixed by \_\_HAL\_TIM\_ENABLE\_IT
 4. Gate variable in function scope → fixed to file scope
 5. V\_S\_sq\_avg zero init → fixed to (V\_S\_FULL\_SCALE/√2)²
-6. Wrong TIM1 pins PE9/PA7 → fixed to PA8/PB13
+6. Wrong TIM1 pins PE9/PA7 → fixed to PA8/PE8
 7. Wrong I\_active formula → fixed to P\_avg×sqrt(2)/V\_S\_rms
+8. TIM1\_CH1N moved from PB13 to PE8 (permanent) → investigated
+   extensively: CC1NE=1/MOE=1 confirmed via debugger, .ioc diff
+   vs v0.1-sw-verified showed no other config drift, isolated
+   TIM1-only test (no ADC/DMA/ISR) showed CH1/CH1N both working
+   correctly on both PB13 and PE8. Binary search isolated the
+   real cause: with ADC inputs floating, the hysteresis
+   controller's error term stays biased toward gate=1 almost
+   permanently → CCR1 near ARR (~98% duty) → CH1N's
+   complementary pulse falls below the 500ns deadtime and is
+   fully suppressed → flat 0V reading, even though nothing is
+   broken. Expected behavior with floating ADC inputs, not a
+   hardware/firmware fault — neither pin was ever defective.
+   Connect real/simulated ADC signals (ESP32 signal generator)
+   to see normal alternating CH1/CH1N PWM.
 
 ═══════════════════════════════════════════════════════
 SECTION 10 — PROJECT STATUS
@@ -205,6 +219,11 @@ software-in-loop test
 \[ ] Software-in-loop test
 \[ ] Hardware calculations
 \[ ] Real hardware integration
+      NOTE: floating ADC inputs bias the hysteresis controller
+      to near-100% duty (gate=1), fully suppressing CH1N's
+      complementary pulse below the 500ns deadtime — CH1N reads
+      flat 0V on a scope until real/simulated ADC signals are
+      connected (see Known Fixed Bugs item 8).
 \[ ] THD measurement
 \[ ] Publication
 

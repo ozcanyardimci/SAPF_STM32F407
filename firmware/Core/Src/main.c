@@ -129,7 +129,7 @@ int main(void)
 
   /* Step 3: Start PWM outputs before enabling the update interrupt.
    * Gate signals must be active before the ISR can write to CCR1.
-   * CH1/CH1N drive the H-bridge (PA8 and PB13) with 500ns deadtime.
+   * CH1/CH1N drive the H-bridge (PA8 and PE8) with 500ns deadtime.
    * CH2 provides the fixed ADC trigger at CCR2=4199 (mid-period).  */
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
@@ -237,6 +237,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     /* ── Step 1: Scale raw ADC values to physical units ──────────
      *
      * Bipolar scaling (I_APF, V_S, I_L1):
+     * 
      *   physical = ((raw - 2048.0f) / 2047.5f) × FULL_SCALE
      *   ADC mid-scale 2048 → 0 (zero current or zero voltage)
      *   ADC full-scale 4095 → +FULL_SCALE

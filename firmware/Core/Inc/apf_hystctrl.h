@@ -5,7 +5,7 @@
  *          Active Power Filter (SAPF) on STM32F407VGT6 Discovery.
  *
  * This module implements the inner control loop of the APF.
- * It drives the H-bridge gate through TIM1 CH1 / CH1N (PA8 / PB13)
+ * It drives the H-bridge gate through TIM1 CH1 / CH1N (PA8 / PE8)
  * using a fixed-band hysteresis algorithm.
  *
  * Call order (see CLAUDE.md Section 10):
@@ -52,7 +52,7 @@ extern "C" {
 /**
  * V_DC_FULL_SCALE  —  100.0 V
  *
- * The DC link setpoint is 90V.  100V gives a 10V (11%) margin so the
+ * The DC link setpoint is 80V.  100V gives a 20V (25%) margin so the
  * DC link capacitor voltage is always representable at full ADC resolution.
  * Unipolar: ADC zero (0) = 0V, ADC full-scale (4095) = 100V.
  */

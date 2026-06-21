@@ -70,7 +70,7 @@
 #define ALPHA   (TS / (TAU + TS))
 
 /**
- * VDC_REF  —  90.0 volts
+ * VDC_REF  —  80.0 volts
  *
  * DC link voltage setpoint.
  *
@@ -78,10 +78,10 @@
  * force current through the APF inductor in either direction.  The
  * minimum required headroom depends on the maximum current slew rate:
  *   ΔV_min = L × (ΔI / Ts) = 0.00421H × (1A / 50µs) ≈ 84V worst case
- * 90V provides 22.1V margin above the 67.9V grid peak, which is
+ * 80V provides 12.1V margin above the 67.9V grid peak, which is
  * sufficient for rated operating conditions.
  */
-#define VDC_REF  90.0f
+#define VDC_REF  80.0f
 
 /**
  * PID_OUT_LIMIT  —  1.0 ampere
@@ -135,8 +135,8 @@ static volatile float P_avg = 0.0f;
  * Its square root gives V_S_rms without storing a complete 50Hz cycle
  * (which would require 400 samples at 20kHz).
  *
- * Initial value: 2449.7 V² = (V_S_FULL_SCALE / √2)²
- *              = (70.0V / 1.41421)² = 49.497² ≈ 2449.7
+ * Initial value: 2450.0 V² = (V_S_FULL_SCALE / √2)²
+ *              = 70² / 2 = 4900 / 2 = 2450.0 exactly
  *
  * Why not start at 0?
  *   If V_S_sq_avg = 0 at power-up, V_S_rms = 0 → clamped to 1V.
@@ -220,8 +220,8 @@ static float pid_update(PID_t *pid, float error)
  * ---------------
  * Resets all persistent algorithm state to known safe initial values.
  *
- * V_S_sq_avg is pre-loaded to 2449.7 V² = (V_S_FULL_SCALE / √2)²
- * = (70.0V / 1.41421)² to prevent the startup transient described in
+ * V_S_sq_avg is pre-loaded to 2450.0 V² = (V_S_FULL_SCALE / √2)²
+ * = 70² / 2 = 4900 / 2 = 2450.0 exactly, to prevent the startup transient described in
  * Bug 5 (CLAUDE.md Section 13).  Update this value after confirming the
  * real sensor gain and voltage divider ratios on hardware.
  *
@@ -230,7 +230,7 @@ static float pid_update(PID_t *pid, float error)
  * Also safe to call on warm restart (watchdog or debugger).
  *
  * Inputs:  none
- * Outputs: P_avg = 0, V_S_sq_avg = 2449.7, vdc_pid initialised
+ * Outputs: P_avg = 0, V_S_sq_avg = 2450.0, vdc_pid initialised
  */
 void APF_RefGen_Init(void)
 {
@@ -330,7 +330,7 @@ float APF_RefGen_Update(float V_S, float I_L1, float V_dc)
      * Step 5 — DC link PID correction  [A]
      *
      * Computes a small correction current delta_I to maintain the DC
-     * link capacitor at VDC_REF = 90V.
+     * link capacitor at VDC_REF = 80V.
      *   Positive error (V_dc too low) → positive delta_I → APF draws
      *   slightly more energy from the grid, charging the capacitor.
      *   Negative error (V_dc too high, unlikely) → negative delta_I.

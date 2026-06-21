@@ -90,8 +90,8 @@ typedef struct
  * ---------------
  * Resets all persistent state to safe known initial values.
  *
- * V_S_sq_avg is pre-loaded to 2449.7 V² = (V_S_FULL_SCALE / √2)²
- * = (70.0 / 1.41421)².  Without this pre-seed, V_S_sq_avg starts at
+ * V_S_sq_avg is pre-loaded to 2450.0 V² = (V_S_FULL_SCALE / √2)²
+ * = 70² / 2 = 4900 / 2 = 2450.0 exactly.  Without this pre-seed, V_S_sq_avg starts at
  * zero, V_S_rms clamps to 1V, and u_t reaches ±35 for ~95ms, producing
  * dangerous I_APF_ref spikes on real hardware (Bug 5, CLAUDE.md §13).
  *
@@ -100,7 +100,7 @@ typedef struct
  * Safe to call on warm restart (watchdog reset or debugger restart).
  *
  * Inputs:  none
- * Outputs: P_avg = 0, V_S_sq_avg = 2449.7, vdc_pid fully initialised
+ * Outputs: P_avg = 0, V_S_sq_avg = 2450.0, vdc_pid fully initialised
  */
 void APF_RefGen_Init(void);
 
@@ -116,7 +116,7 @@ void APF_RefGen_Init(void);
  *   2. P_avg  ← IIR(p,  5Hz)              average active power
  *   3. V_S_rms ← sqrt(IIR(V_S², 5Hz))    running RMS estimate
  *   4. I_active = P_avg × √2 / V_S_rms   active current peak
- *   5. delta_I = PID(90V − V_dc)          DC link correction
+ *   5. delta_I = PID(80V − V_dc)          DC link correction
  *   6. u_t = V_S / (√2 × V_S_rms)        unit sine template
  *   7. I_APF_ref = (I_active+delta_I)×u_t − I_L1   compensation ref
  *

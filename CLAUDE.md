@@ -23,7 +23,7 @@ Grid voltage:         48V RMS (transformer secondary)
 Grid peak:            48 × √2 = 67.9V
 Grid frequency:       50Hz
 
-DC link setpoint:     90V
+DC link setpoint:     80V
 APF inductor:         4.21mH air-core (measured with LCR meter)
                       Simulink model used 5mH — acceptable difference
 
@@ -84,7 +84,7 @@ Period:           50 microseconds
 CH1 (CCR1):       Gate control — variable
                   Written by APF_HystCtrl every ISR call
                   PA8  → TIM1_CH1  → positive leg (Q1+Q4)
-                  PB13 → TIM1_CH1N → negative leg (Q2+Q3)
+                  PE8  → TIM1_CH1N → negative leg (Q2+Q3)
                   Deadtime: 84 counts = 500ns
 
 CH2 (CCR2):       ADC trigger — FIXED at 4199
@@ -143,7 +143,7 @@ Unipolar signals (V_dc):
 
 Full-scale constants (in apf_hystctrl.h):
   I_APF_FULL_SCALE = 5.0f    ±5A   ACS712-05B measurement range
-  V_DC_FULL_SCALE  = 100.0f  0-100V covers 90V setpoint with margin
+  V_DC_FULL_SCALE  = 100.0f  0-100V covers 80V setpoint (20V margin, 25% headroom)
   V_S_FULL_SCALE   = 70.0f   ±70V  covers 67.9V grid peak
   I_L1_FULL_SCALE  = 5.0f    ±5A   ACS712-05B measurement range
 
@@ -162,7 +162,7 @@ Constants:
   TS      = 0.00005f         50 microseconds
   TAU     = 0.0318f          LPF time constant (fc = 5Hz)
   ALPHA   = TS/(TAU+TS)      0.001570f (computed at compile time)
-  VDC_REF = 90.0f            DC link voltage setpoint
+  VDC_REF = 80.0f            DC link voltage setpoint
 
 Inputs:
   V_S       grid voltage in volts
@@ -179,7 +179,7 @@ Steps:
      V_S_rms = sqrt(V_S_sq_avg)
      guard:  if V_S_rms < 1.0f → V_S_rms = 1.0f
   4. I_active = P_avg × sqrt(2) / V_S_rms
-  5. e_Vdc = 90.0f - V_dc
+  5. e_Vdc = 80.0f - V_dc
      delta_I = PID(e_Vdc)
   6. V_S_peak = sqrt(2) × V_S_rms
      guard: if V_S_peak < 1.0f → V_S_peak = 1.0f
@@ -195,7 +195,7 @@ PID:
 
 Initialization:
   P_avg      = 0.0f
-  V_S_sq_avg = 2449.7f   (70/√2)² = (70/1.41421)² = 49.497² = 2449.7
+  V_S_sq_avg = 2450.0f   (70.0f / √2)² = 70² / 2 = 4900 / 2 = 2450.0f exactly
                          prevents startup transient
   PID state  = 0.0f
 
@@ -290,7 +290,7 @@ SECTION 12 — WARNINGS
 
 WARNING 1 — CubeMX regeneration:
   HAL_TIM_MspPostInit in tim.c reverts to PE9/PA7 pins.
-  Manually correct to PA8 and PB13 after every regeneration.
+  Manually correct to PA8 and PE8 after every regeneration.
 
 WARNING 2 — ADC trigger architecture:
   TIM1_CH2 CCR2=4199 is the ADC trigger. Never modify CCR2.
@@ -303,7 +303,7 @@ WARNING 3 — ACS712 output voltage:
 
 WARNING 4 — DC link capacitor:
   Value and rating are TBD. Ask user before specifying.
-  Must be rated above 90V setpoint with safety margin.
+  Must be rated above 80V setpoint with safety margin.
 
 WARNING 5 — Star ground:
   Power ground and signal ground must meet at one point only.
@@ -342,11 +342,33 @@ Bug 5: V_S_sq_avg initialized to zero
 
 Bug 6: Wrong TIM1 GPIO pins
   PE9/PA7 — PA7 conflicts with Discovery MEMS SPI
-  Fix: PA8 and PB13
+  Fix: PA8 and PE8
 
 Bug 7: Wrong I_active formula
   P_avg / V_S_rms² is wrong
   P_avg × sqrt(2) / V_S_rms is correct
+
+Bug 8: TIM1_CH1N moved from PB13 to PE8 (permanent).
+  Investigated extensively: register inspection confirmed
+  CC1NE=1 and MOE=1 correct, .ioc diff against
+  v0.1-sw-verified showed no other config drift, isolated
+  minimal TIM1-only test (no ADC/DMA/ISR) showed CH1/CH1N
+  both working correctly on both PB13 and PE8. Binary
+  search (re-enabling ADC/DMA, then the ISR, one at a
+  time) isolated the real cause: with ADC inputs floating
+  (no real V_S/I_L1/I_APF/V_dc signals connected), the
+  hysteresis controller's error term stays biased toward
+  gate=1 almost permanently, holding CCR1 near ARR (~98%
+  duty) for extended stretches. The resulting CH1N active
+  pulse becomes narrower than the 500ns hardware deadtime
+  and is fully suppressed — CH1N reads as flat 0V on a
+  normal oscilloscope even though nothing is actually
+  broken. This is expected behavior with floating ADC
+  inputs, not a hardware or firmware fault. Neither PB13
+  nor PE8 was ever actually defective. Connect real or
+  simulated ADC signals (e.g. the ESP32 signal generator
+  setup) to see normal alternating complementary PWM on
+  both CH1 and CH1N.
 
 ═══════════════════════════════════════════════════════
 SECTION 14 — PROJECT STATUS
@@ -361,6 +383,12 @@ SECTION 14 — PROJECT STATUS
 [ ] Software-in-loop test with ESP32
 [ ] Hardware component calculations
 [ ] Real hardware connection
+      NOTE: floating ADC inputs bias the hysteresis
+      controller to near-100% duty (gate=1), which fully
+      suppresses CH1N's complementary pulse below the
+      500ns deadtime — CH1N will read flat 0V on a scope
+      until real or simulated V_S/I_L1/I_APF/V_dc signals
+      are connected (see Bug 8, Section 13).
 [ ] Scaling constant calibration
 [ ] THD measurement before APF
 [ ] THD measurement after APF
